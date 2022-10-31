@@ -1,0 +1,63 @@
+import Versions
+
+plugins {
+    id 'idea'
+    id 'io.spring.dependency-management' version '1.0.13.RELEASE'
+    id 'org.springframework.boot' version '2.6.9'
+}
+
+idea {
+    project {
+        languageLevel = JavaVersion.VERSION_17
+    }
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+allprojects {
+    group 'io.codeex'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+    }
+
+    apply plugin: 'io.spring.dependency-management'
+    dependencyManagement {
+        dependencies {
+            imports {
+                mavenBom 'org.springframework.boot:spring-boot-dependencies:2.6.9'
+            }
+            dependency "org.modelmapper:modelmapper:${Versions.MODEL_MAPPER}"
+            dependency "org.testcontainers:junit-jupiter:${Versions.TEST_CONTAINERS}"
+            dependency "org.testcontainers:neo4jg:${Versions.TEST_CONTAINERS}"
+//            dependency 'com.google.guava:guava:${Versions.GUAVA}' // --->>> example
+        }
+    }
+
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            options.compilerArgs << "-Xlint:unchecked"
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            failOnVersionConflict()
+        }
+        resolutionStrategy {
+//            force 'javax.servlet:servlet-api:2.4' // --->>> example
+        }
+    }
+}
+
+//print versions from BOM
+task managedVersions {
+    doLast {
+        dependencyManagement.managedVersions.each {
+            println it
+        }
+    }
+}
